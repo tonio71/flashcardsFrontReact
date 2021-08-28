@@ -19,11 +19,31 @@ export default function FlashCardsPage() {
   }
 
   function handleRadioButtonTitleClick() {
+    const updatedCards = [...allCards].map(card => ({
+      ...card,
+      showTitle: true,
+    }));
+    setAllCards(updatedCards);
     setShowTitle(true);
   }
 
   function handleRadioButtonDescriptionClick() {
+    const updatedCards = [...allCards].map(card => ({
+      ...card,
+      showTitle: false,
+    }));
+    setAllCards(updatedCards);
     setShowTitle(false);
+  }
+
+  function handleToggleFlashCard(id) {
+    let cardsUpdated = [...allCards];
+    let cardIndex = cardsUpdated.findIndex(card => card.id === id);
+    if (cardIndex >= 0) {
+      cardsUpdated[cardIndex].showTitle = !cardsUpdated[cardIndex].showTitle;
+    }
+
+    setAllCards(cardsUpdated);
   }
 
   console.log(showTitle);
@@ -61,9 +81,11 @@ export default function FlashCardsPage() {
             return (
               <FlashCard
                 key={dado.id}
+                id={dado.id}
                 title={dado.title}
                 description={dado.description}
-                showFlashCardTitle={showTitle}
+                showFlashCardTitle={dado.showTitle}
+                onToggleFlashCard={handleToggleFlashCard}
               ></FlashCard>
             );
           })}

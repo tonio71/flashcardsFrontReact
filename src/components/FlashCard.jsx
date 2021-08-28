@@ -1,21 +1,19 @@
-import { useEffect, useState } from 'react';
+import { getNewId } from '../services/idService';
 
 export default function FlashCard({
+  id = getNewId(),
   title = 'Título do card',
   description = 'Descrição do card',
   showFlashCardTitle = true,
+  onToggleFlashCard = null,
 }) {
-  const [showTitle, setShowTitle] = useState(showFlashCardTitle);
-
-  const fontSizeClassName = showTitle ? 'text-xl' : 'text-sm';
+  const fontSizeClassName = showFlashCardTitle ? 'text-xl' : 'text-sm';
 
   function toggleShowTitle() {
-    setShowTitle(!showTitle);
+    if (onToggleFlashCard) {
+      onToggleFlashCard(id);
+    }
   }
-
-  useEffect(() => {
-    setShowTitle(showFlashCardTitle);
-  }, [showFlashCardTitle]);
 
   return (
     <div
@@ -25,7 +23,7 @@ export default function FlashCard({
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
       onClick={toggleShowTitle}
     >
-      {showTitle ? title : description}.
+      {showFlashCardTitle ? title : description}.
     </div>
   );
 }
