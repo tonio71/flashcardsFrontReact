@@ -1,96 +1,264 @@
-import { useState } from 'react';
-import { allFlashCards } from '../data/allFlashCards.js';
-import { ShuffleArray } from '../helpers/Helpers.jsx';
-import Button from '../components/Button.jsx';
-import FlashCard from '../components/FlashCard.jsx';
-import FlashCards from '../components/FlashCards.jsx';
-import Header from '../components/Header.jsx';
-import Main from '../components/Main.jsx';
-import RadioButton from '../components/RadioButton.jsx';
+import { useEffect, useState } from 'react';
+import Button from '../components/Button';
+import Error from '../components/Error';
+import FlashCard from '../components/FlashCard';
+import FlashCardItem from '../components/FlashCardItem';
+import FlashCards from '../components/FlashCards';
+import Header from '../components/Header';
+import Loading from '../components/Loading';
+import Main from '../components/Main';
+import RadioButton from '../components/RadioButton';
+import { helperShuffleArray } from '../helpers/arrayHelpers';
+import {
+  createFlashCard,
+  deleteFlashCard,
+  editFlashCard,
+  getAllFlashCards,
+} from '../services/apiServices';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+import FlashCardForm from '../components/FlashCardForm';
+import { getNewId } from '../services/idService';
 
 export default function FlashCardsPage() {
-  const [allCards, setAllCards] = useState(allFlashCards);
-  const [showTitle, setShowTitle] = useState(true);
+  const [allCards, setAllCards] = useState([]);
+  const [studyCards, setStudyCards] = useState([]);
+  const [radioButtonShowTitle, setRadioButtonShowTitle] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [createMode, setcreateMode] = useState(true);
+  const [selectedTab, setselectedTab] = useState(0);
+  const [selectedFlashCard, setselectedFlashCard] = useState(null);
 
-  function handleOnButtonClick() {
-    const shuffledCards = ShuffleArray(allCards);
-    console.log(shuffledCards);
-    setAllCards(shuffledCards);
-  }
+  useEffect(() => {
+    // SOLUÇÃO 1
+    // Async Await
 
-  function handleRadioButtonTitleClick() {
-    const updatedCards = [...allCards].map(card => ({
-      ...card,
-      showTitle: true,
-    }));
-    setAllCards(updatedCards);
-    setShowTitle(true);
-  }
-
-  function handleRadioButtonDescriptionClick() {
-    const updatedCards = [...allCards].map(card => ({
-      ...card,
-      showTitle: false,
-    }));
-    setAllCards(updatedCards);
-    setShowTitle(false);
-  }
-
-  function handleToggleFlashCard(id) {
-    let cardsUpdated = [...allCards];
-    let cardIndex = cardsUpdated.findIndex(card => card.id === id);
-    if (cardIndex >= 0) {
-      cardsUpdated[cardIndex].showTitle = !cardsUpdated[cardIndex].showTitle;
+    async function getFlashCards() {
+      try {
+        const backEndAllCards = await getAllFlashCards();
+        setAllCards(backEndAllCards);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+      }
     }
+    getFlashCards();
 
-    setAllCards(cardsUpdated);
+    // SOLUÇÃO 2
+    //IIFE - envolva a funcao em parenteses e depois dela um par de parentes
+    // para automaticamente chamar a função, sem chamar explicitamente.
+    // (async function getFlashCards() {
+    //   const backEndAllCards = await getAllFlashCards();
+    //   setAllCards(backEndAllCards);
+    // })();
+
+    // SOLUÇÃO 3
+    // Leitura de backend usando PROMISES .THEN
+    // getAllFlashCards().then(allFlashCards => {
+    //   setAllCards(allFlashCards);
+    // });
+  }, []);
+
+  useEffect(() => {
+    setStudyCards(allCards.map(card => ({ ...card, showTitle: true })));
+  }, [allCards]);
+
+  function handleShuffleButtonClick() {
+    const shuffledCards = helperShuffleArray(studyCards);
+    setStudyCards(shuffledCards);
   }
 
-  console.log(showTitle);
+  function handleRadioShowDescriptionClick() {
+    // prettier-ignore
+    const updatedCards = 
+      [...studyCards].map(card => ({...card, showTitle: false}));
+
+    setStudyCards(updatedCards);
+    setRadioButtonShowTitle(false);
+  }
+
+  function handleRadioShowTitleClick() {
+    // prettier-ignore
+    const updatedCards = 
+      [...studyCards].map(card => ({...card, showTitle: true}));
+
+    setStudyCards(updatedCards);
+    setRadioButtonShowTitle(true);
+  }
+
+  function handleToggleFlashCard(cardId) {
+    const updatedCards = [...studyCards];
+    const cardIndex = updatedCards.findIndex(card => card.id === cardId);
+    updatedCards[cardIndex].showTitle = !updatedCards[cardIndex].showTitle;
+    setStudyCards(updatedCards);
+  }
+
+  async function handleClickDeleteFlashCardItem(id) {
+    try {
+      // deleting from backend
+      await deleteFlashCard(id);
+
+      //deletando do frontend
+      setAllCards(allCards.filter(card => card.id !== id));
+      setError('');
+    } catch (error) {
+      setError(error.message);
+    }
+  }
+
+  function handleClickEditFlashCardItem(card) {
+    setcreateMode(false);
+    setselectedFlashCard(card);
+    setselectedTab(1);
+  }
+
+  function handleTabSelect(tabIndex) {
+    setselectedTab(tabIndex);
+  }
+
+  function handleNewFlashCard() {
+    setcreateMode(true);
+    setselectedFlashCard(null);
+  }
+
+  let mainJSX = (
+    <div className="flex justify-center m-4">
+      <Loading></Loading>
+    </div>
+  );
+
+  async function handleOnPersist(title, description) {
+    if (createMode) {
+      try {
+        //backend
+        const newCard = await createFlashCard({
+          id: getNewId(),
+          title: title,
+          description: description,
+        });
+        console.log('Novo registro criado: ', newCard);
+        //frontend
+        setAllCards([...allCards, newCard]);
+        setError('');
+      } catch (error) {
+        setError(error.message);
+      }
+    } else {
+      try {
+        // backend
+        await editFlashCard({
+          id: selectedFlashCard.id,
+          title: title,
+          description: description,
+        });
+
+        // frontend
+        setAllCards(
+          allCards.map(card => {
+            if (card.id === selectedFlashCard.id) {
+              return { ...card, title: title, description: description };
+            }
+            return card;
+          })
+        );
+        setselectedFlashCard(null);
+        setcreateMode(true);
+        setError('');
+      } catch (error) {
+        setError(error.message);
+      }
+    }
+  }
+
+  if (error) {
+    mainJSX = <Error>{error}</Error>;
+  }
+
+  if (!loading && !error) {
+    mainJSX = (
+      <>
+        <Tabs selectedIndex={selectedTab} onSelect={handleTabSelect}>
+          <TabList>
+            <Tab>Listagem</Tab>
+            <Tab>Cadastro</Tab>
+            <Tab>Estudo</Tab>
+          </TabList>
+
+          <TabPanel>
+            <h2>Any content 1</h2>
+            {allCards.map(flashCard => {
+              return (
+                <FlashCardItem
+                  key={FlashCard.id}
+                  onDelete={handleClickDeleteFlashCardItem}
+                  onEdit={handleClickEditFlashCardItem}
+                >
+                  {flashCard}
+                </FlashCardItem>
+              );
+            })}
+          </TabPanel>
+
+          <TabPanel>
+            <Button onButtonClick={handleNewFlashCard}>Novo flash card</Button>
+            <FlashCardForm createMode={createMode} onPersist={handleOnPersist}>
+              {selectedFlashCard}
+            </FlashCardForm>
+          </TabPanel>
+
+          <TabPanel>
+            <div className="text-center mb-4">
+              <Button onButtonClick={handleShuffleButtonClick}>
+                Embaralhar cards
+              </Button>
+            </div>
+
+            <div className="flex flex-row items-center justify-center space-x-4 m-4">
+              <RadioButton
+                id="radioButtonShowTitle"
+                name="showInfo"
+                buttonChecked={radioButtonShowTitle}
+                onButtonClick={handleRadioShowTitleClick}
+              >
+                Mostrar título
+              </RadioButton>
+
+              <RadioButton
+                id="radioButtonShowDescription"
+                name="showInfo"
+                buttonChecked={!radioButtonShowTitle}
+                onButtonClick={handleRadioShowDescriptionClick}
+              >
+                Mostrar descrição
+              </RadioButton>
+            </div>
+
+            <FlashCards>
+              {studyCards.map(({ id, title, description, showTitle }) => {
+                return (
+                  <FlashCard
+                    key={id}
+                    id={id}
+                    title={title}
+                    description={description}
+                    showFlashCardTitle={showTitle}
+                    onToggleFlashCard={handleToggleFlashCard}
+                  />
+                );
+              })}
+            </FlashCards>
+          </TabPanel>
+        </Tabs>
+      </>
+    );
+  }
 
   return (
-    <div>
-      <Header>FlashCards V1</Header>
-      <Main>
-        <div className="text-center mb-4">
-          <Button onButtonClick={handleOnButtonClick}>Embaralhar cartas</Button>
-        </div>
+    <>
+      <Header>react-flash-cards-v1</Header>
 
-        <div className="flex flex-row  justify-center space-x-4 m-4">
-          <RadioButton
-            id="radioButtonShowTitle"
-            name="showInfo"
-            checked={showTitle}
-            onButtonClick={handleRadioButtonTitleClick}
-          >
-            {' '}
-            Mostrar Título
-          </RadioButton>
-          <RadioButton
-            id="radioButtonShowDescription"
-            name="showInfo"
-            checked={!showTitle}
-            onButtonClick={handleRadioButtonDescriptionClick}
-          >
-            Mostrar Descrição
-          </RadioButton>
-        </div>
-
-        <FlashCards>
-          {allCards.map(dado => {
-            return (
-              <FlashCard
-                key={dado.id}
-                id={dado.id}
-                title={dado.title}
-                description={dado.description}
-                showFlashCardTitle={dado.showTitle}
-                onToggleFlashCard={handleToggleFlashCard}
-              ></FlashCard>
-            );
-          })}
-        </FlashCards>
-      </Main>
-    </div>
+      <Main>{mainJSX}</Main>
+    </>
   );
 }

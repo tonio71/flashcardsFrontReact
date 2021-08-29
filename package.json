@@ -13,6 +13,7 @@
     "react-icons": "4.2.0",
     "react-scripts": "4.0.3",
     "react-spinners": "0.10.6",
+    "react-tabs": "3.2.2",
     "uuid": "8.3.2"
   },
   "devDependencies": {
@@ -23,7 +24,7 @@
     "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   },
   "scripts": {
-    "dev": "craco start",
+    "dev": "yarn --cwd ./backendFlashCards server & craco start",
     "build": "craco build",
     "prod:local": "craco build && serve -s build",
     "prod:cloud": "craco build && netlify deploy --prod --open --dir build",

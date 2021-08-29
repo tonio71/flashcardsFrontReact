@@ -1,16 +1,21 @@
 export default function Button({
-  children: description = 'Descrição do Botão',
+  children: description = 'Descrição do botão',
   onButtonClick = null,
+  className = '',
+  type = '',
 }) {
-  function handleOnButtonClick() {
+  function handleButtonClick() {
     if (onButtonClick) {
+      console.log('clicou');
       onButtonClick();
     }
   }
+
   return (
     <button
-      className="bg-blue-500 hover:bg-blue-300 text-white font-bold py-2 px-4 m-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-      onClick={handleOnButtonClick}
+      className={`bg-gray-200 p-2 m-1 rounded-md ${className}`}
+      onClick={handleButtonClick}
+      type={type}
     >
       {description}
     </button>
