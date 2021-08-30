@@ -2,8 +2,8 @@
   "flashcards": [
     {
       "id": "77904efa-c2ae-4206-b0e7-a9df1eb7d166",
-      "title": "Componente React11",
-      "description": "Representa código reutilizável pelo React. Em regra, deve começar com letra maiúscula. Pode ser customizável através de props112"
+      "title": "Componente React",
+      "description": "Representa código reutilizável pelo React. Em regra, deve começar com letra maiúscula. Pode ser customizável através de props"
     },
     {
       "id": "c1b744d6-16e0-41b7-9cd9-41ddfbd97c64",
@@ -54,21 +54,6 @@
       "id": "e8429ce8-fdaf-459a-9b7f-0bc133fece66",
       "title": "Composition",
       "description": "Técnica para agrupar componentes, o que pode evitar o problema do \"prop drilling\"."
-    },
-    {
-      "id": "3082e90e-7fe7-4169-a300-0c0ff510a5bc",
-      "title": "bbb",
-      "description": "dddbbb"
-    },
-    {
-      "id": "6b5ce3c5-0656-4196-adf0-6c512b609588",
-      "title": "ccc",
-      "description": "dddccc"
-    },
-    {
-      "id": "f8ec5671-c833-44d2-b3e7-8be0ca5b1898",
-      "title": "ddd",
-      "description": "ddd   dddd"
     }
   ]
 }

@@ -1,4 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'react-tabs/style/react-tabs.css';
+
 import Button from '../components/Button';
 import Error from '../components/Error';
 import FlashCard from '../components/FlashCard';
@@ -8,17 +13,15 @@ import Header from '../components/Header';
 import Loading from '../components/Loading';
 import Main from '../components/Main';
 import RadioButton from '../components/RadioButton';
-import { helperShuffleArray } from '../helpers/arrayHelpers';
 import {
   createFlashCard,
   deleteFlashCard,
   editFlashCard,
   getAllFlashCards,
 } from '../services/apiServices';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
 import FlashCardForm from '../components/FlashCardForm';
 import { getNewId } from '../services/idService';
+import { helperShuffleArray } from '../helpers/arrayHelpers';
 
 export default function FlashCardsPage() {
   const [allCards, setAllCards] = useState([]);
@@ -102,6 +105,7 @@ export default function FlashCardsPage() {
       //deletando do frontend
       setAllCards(allCards.filter(card => card.id !== id));
       setError('');
+      toast.success('Flashcard excluído com sucesso!');
     } catch (error) {
       setError(error.message);
     }
@@ -141,6 +145,7 @@ export default function FlashCardsPage() {
         //frontend
         setAllCards([...allCards, newCard]);
         setError('');
+        toast.success(`Flashcard "${title}" salvo com sucesso!`);
       } catch (error) {
         setError(error.message);
       }
@@ -165,6 +170,7 @@ export default function FlashCardsPage() {
         setselectedFlashCard(null);
         setcreateMode(true);
         setError('');
+        toast.success(`Flashcard "${title}" alterado com sucesso!`);
       } catch (error) {
         setError(error.message);
       }
@@ -256,6 +262,7 @@ export default function FlashCardsPage() {
 
   return (
     <>
+      <ToastContainer></ToastContainer>
       <Header>react-flash-cards-v1</Header>
 
       <Main>{mainJSX}</Main>

@@ -1,7 +1,9 @@
 import { getAll, exclude, create, edit } from './httpServices';
-import { getNewId } from './idService';
 
-const base_url = 'http://localhost:3001/flashcards';
+const base_url =
+  process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3001/flashcards'
+    : 'https://flashcards-backend-ampr.glitch.me/flashcards';
 
 export async function getAllFlashCards() {
   const allFlashCards = await getAll(base_url);
